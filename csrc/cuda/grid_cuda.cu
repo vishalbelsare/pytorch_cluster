@@ -25,11 +25,11 @@ __global__ void grid_kernel(const scalar_t *pos, const scalar_t *size,
 }
 
 torch::Tensor grid_cuda(torch::Tensor pos, torch::Tensor size,
-                        torch::optional<torch::Tensor> optional_start,
-                        torch::optional<torch::Tensor> optional_end) {
+                        std::optional<torch::Tensor> optional_start,
+                        std::optional<torch::Tensor> optional_end) {
   CHECK_CUDA(pos);
   CHECK_CUDA(size);
-  cudaSetDevice(pos.get_device());
+  c10::cuda::MaybeSetDevice(pos.get_device());
 
   if (optional_start.has_value())
     CHECK_CUDA(optional_start.value());
@@ -58,7 +58,7 @@ torch::Tensor grid_cuda(torch::Tensor pos, torch::Tensor size,
   auto start = optional_start.value();
   auto end = optional_end.value();
 
-  auto out = torch::empty(pos.size(0), pos.options().dtype(torch::kLong));
+  auto out = torch::empty({pos.size(0)}, pos.options().dtype(torch::kLong));
 
   auto stream = at::cuda::getCurrentCUDAStream();
   AT_DISPATCH_ALL_TYPES_AND(at::ScalarType::Half, pos.scalar_type(), "_", [&] {

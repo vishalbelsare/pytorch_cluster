@@ -16,6 +16,11 @@
 
 --------------------------------------------------------------------------------
 
+> [!CAUTION]
+> #### ⚠️ This repository is deprecated in favor of [`pyg-lib>=0.7.0`](https://github.com/pyg-team/pyg-lib)
+
+--------------------------------------------------------------------------------
+
 This package consists of a small extension library of highly optimized graph cluster algorithms for the use in [PyTorch](http://pytorch.org/).
 The package consists of the following clustering algorithms:
 
@@ -30,52 +35,61 @@ All included operations work on varying data types and are implemented both for 
 
 ## Installation
 
-### Anaconda
-
-**Update:** You can now install `pytorch-cluster` via [Anaconda](https://anaconda.org/pyg/pytorch-cluster) for all major OS/PyTorch/CUDA combinations 🤗
-Given that you have [`pytorch >= 1.8.0` installed](https://pytorch.org/get-started/locally/), simply run
-
-```
-conda install pytorch-cluster -c pyg
-```
-
 ### Binaries
 
-We alternatively provide pip wheels for all major OS/PyTorch/CUDA combinations, see [here](https://data.pyg.org/whl).
+We provide pip wheels for all major OS/PyTorch/CUDA combinations, see [here](https://data.pyg.org/whl).
 
-#### PyTorch 1.10.0
+#### PyTorch 2.11
 
-To install the binaries for PyTorch 1.10.0, simply run
-
-```
-pip install torch-cluster -f https://data.pyg.org/whl/torch-1.10.0+${CUDA}.html
-```
-
-where `${CUDA}` should be replaced by either `cpu`, `cu102`, or `cu113` depending on your PyTorch installation.
-
-|             | `cpu` | `cu102` | `cu113` |
-|-------------|-------|---------|---------|
-| **Linux**   | ✅    | ✅      | ✅      |
-| **Windows** | ✅    | ✅      | ✅      |
-| **macOS**   | ✅    |         |         |
-
-#### PyTorch 1.9.0/1.9.1
-
-To install the binaries for PyTorch 1.9.0 and 1.9.1, simply run
+To install the binaries for PyTorch 2.11, simply run
 
 ```
-pip install torch-cluster -f https://data.pyg.org/whl/torch-1.9.0+${CUDA}.html
+pip install torch-cluster -f https://data.pyg.org/whl/torch-2.11.0+${CUDA}.html
 ```
 
-where `${CUDA}` should be replaced by either `cpu`, `cu102`, or `cu111` depending on your PyTorch installation.
+where `${CUDA}` should be replaced by either `cpu`, `cu126`, `cu128`, or `cu130` depending on your PyTorch installation.
 
-|             | `cpu` | `cu102` | `cu111` |
-|-------------|-------|---------|---------|
-| **Linux**   | ✅    | ✅      | ✅      |
-| **Windows** | ✅    | ✅      | ✅      |
-| **macOS**   | ✅    |         |         |
+|             | `cpu` | `cu126` | `cu128` | `cu130` |
+|-------------|-------|---------|---------|---------|
+| **Linux**   | ✅    | ✅      | ✅      | ✅      |
+| **Windows** | ✅    | ✅      | ✅      | ✅      |
+| **macOS**   | ✅    |         |         |         |
 
-**Note:** Binaries of older versions are also provided for PyTorch 1.4.0, PyTorch 1.5.0, PyTorch 1.6.0, PyTorch 1.7.0/1.7.1 and PyTorch 1.8.0/1.8.1 (following the same procedure).
+#### PyTorch 2.10
+
+To install the binaries for PyTorch 2.10, simply run
+
+```
+pip install torch-cluster -f https://data.pyg.org/whl/torch-2.10.0+${CUDA}.html
+```
+
+where `${CUDA}` should be replaced by either `cpu`, `cu126`, `cu128`, or `cu130` depending on your PyTorch installation.
+
+|             | `cpu` | `cu126` | `cu128` | `cu130` |
+|-------------|-------|---------|---------|---------|
+| **Linux**   | ✅    | ✅      | ✅      | ✅      |
+| **Windows** | ✅    | ✅      | ✅      | ✅      |
+| **macOS**   | ✅    |         |         |         |
+
+#### PyTorch 2.9
+
+To install the binaries for PyTorch 2.9, simply run
+
+```
+pip install torch-cluster -f https://data.pyg.org/whl/torch-2.9.0+${CUDA}.html
+```
+
+where `${CUDA}` should be replaced by either `cpu`, `cu126`, `cu128`, or `cu130` depending on your PyTorch installation.
+
+|             | `cpu` | `cu126` | `cu128` | `cu130` |
+|-------------|-------|---------|---------|---------|
+| **Linux**   | ✅    | ✅      | ✅      | ✅      |
+| **Windows** | ✅    | ✅      | ✅      | ✅      |
+| **macOS**   | ✅    |         |         |         |
+
+**Note:** Binaries of older versions are also provided for PyTorch 1.4.0, PyTorch 1.5.0, PyTorch 1.6.0, PyTorch 1.7.0/1.7.1, PyTorch 1.8.0/1.8.1, PyTorch 1.9.0, PyTorch 1.10.0/1.10.1/1.10.2, PyTorch 1.11.0, PyTorch 1.12.0/1.12.1, PyTorch 1.13.0/1.13.1, PyTorch 2.0.0/2.0.1, PyTorch 2.1.0/2.1.1/2.1.2, PyTorch 2.2.0/2.2.1/2.2.2, PyTorch 2.3.0/2.3.1, PyTorch 2.4.0/2.4.1, PyTorch 2.5.0/2.5.1, PyTorch 2.6.0, PyTorch 2.7.0/2.7.1, and PyTorch 2.8.0 (following the same procedure).
+For older versions, you need to explicitly specify the latest supported version number or install via `pip install --no-index` in order to prevent a manual installation from source.
+You can look up the latest supported version number [here](https://data.pyg.org/whl).
 
 ### From source
 
@@ -274,7 +288,7 @@ tensor([[0, 1, 2, 4],
 ## Running tests
 
 ```
-python setup.py test
+pytest
 ```
 
 ## C++ API
@@ -282,6 +296,7 @@ python setup.py test
 `torch-cluster` also offers a C++ API that contains C++ equivalent of python models.
 
 ```
+export Torch_DIR=`python -c 'import torch;print(torch.utils.cmake_prefix_path)'`
 mkdir build
 cd build
 # Add -DWITH_CUDA=on support for the CUDA if needed

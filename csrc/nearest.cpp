@@ -1,19 +1,25 @@
+#ifdef WITH_PYTHON
 #include <Python.h>
+#endif
 #include <torch/script.h>
+
+#include "extensions.h"
 
 #ifdef WITH_CUDA
 #include "cuda/nearest_cuda.h"
 #endif
 
 #ifdef _WIN32
+#ifdef WITH_PYTHON
 #ifdef WITH_CUDA
 PyMODINIT_FUNC PyInit__nearest_cuda(void) { return NULL; }
 #else
 PyMODINIT_FUNC PyInit__nearest_cpu(void) { return NULL; }
 #endif
 #endif
+#endif
 
-torch::Tensor nearest(torch::Tensor x, torch::Tensor y, torch::Tensor ptr_x,
+CLUSTER_API torch::Tensor nearest(torch::Tensor x, torch::Tensor y, torch::Tensor ptr_x,
                       torch::Tensor ptr_y) {
   if (x.device().is_cuda()) {
 #ifdef WITH_CUDA

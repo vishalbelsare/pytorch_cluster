@@ -103,7 +103,7 @@ __global__ void weighted_propose_kernel(int64_t *out, int64_t *proposal,
 
 void propose(torch::Tensor out, torch::Tensor proposal, torch::Tensor rowptr,
              torch::Tensor col,
-             torch::optional<torch::Tensor> optional_weight) {
+             std::optional<torch::Tensor> optional_weight) {
 
   auto stream = at::cuda::getCurrentCUDAStream();
 
@@ -192,7 +192,7 @@ __global__ void weighted_respond_kernel(int64_t *out, const int64_t *proposal,
 
 void respond(torch::Tensor out, torch::Tensor proposal, torch::Tensor rowptr,
              torch::Tensor col,
-             torch::optional<torch::Tensor> optional_weight) {
+             std::optional<torch::Tensor> optional_weight) {
 
   auto stream = at::cuda::getCurrentCUDAStream();
 
@@ -214,7 +214,7 @@ void respond(torch::Tensor out, torch::Tensor proposal, torch::Tensor rowptr,
 }
 
 torch::Tensor graclus_cuda(torch::Tensor rowptr, torch::Tensor col,
-                           torch::optional<torch::Tensor> optional_weight) {
+                           std::optional<torch::Tensor> optional_weight) {
   CHECK_CUDA(rowptr);
   CHECK_CUDA(col);
   CHECK_INPUT(rowptr.dim() == 1 && col.dim() == 1);
@@ -223,7 +223,7 @@ torch::Tensor graclus_cuda(torch::Tensor rowptr, torch::Tensor col,
     CHECK_INPUT(optional_weight.value().dim() == 1);
     CHECK_INPUT(optional_weight.value().numel() == col.numel());
   }
-  cudaSetDevice(rowptr.get_device());
+  c10::cuda::MaybeSetDevice(rowptr.get_device());
 
   int64_t num_nodes = rowptr.numel() - 1;
   auto out = torch::full(num_nodes, -1, rowptr.options());

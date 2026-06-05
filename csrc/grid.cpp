@@ -1,4 +1,6 @@
+#ifdef WITH_PYTHON
 #include <Python.h>
+#endif
 #include <torch/script.h>
 
 #include "cpu/grid_cpu.h"
@@ -8,16 +10,18 @@
 #endif
 
 #ifdef _WIN32
+#ifdef WITH_PYTHON
 #ifdef WITH_CUDA
 PyMODINIT_FUNC PyInit__grid_cuda(void) { return NULL; }
 #else
 PyMODINIT_FUNC PyInit__grid_cpu(void) { return NULL; }
 #endif
 #endif
+#endif
 
-torch::Tensor grid(torch::Tensor pos, torch::Tensor size,
-                   torch::optional<torch::Tensor> optional_start,
-                   torch::optional<torch::Tensor> optional_end) {
+CLUSTER_API torch::Tensor grid(torch::Tensor pos, torch::Tensor size,
+                   std::optional<torch::Tensor> optional_start,
+                   std::optional<torch::Tensor> optional_end) {
   if (pos.device().is_cuda()) {
 #ifdef WITH_CUDA
     return grid_cuda(pos, size, optional_start, optional_end);

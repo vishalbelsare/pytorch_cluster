@@ -3,11 +3,16 @@ from typing import Optional
 import torch
 
 
-@torch.jit.script
-def knn(x: torch.Tensor, y: torch.Tensor, k: int,
-        batch_x: Optional[torch.Tensor] = None,
-        batch_y: Optional[torch.Tensor] = None, cosine: bool = False,
-        num_workers: int = 1) -> torch.Tensor:
+def knn(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    k: int,
+    batch_x: Optional[torch.Tensor] = None,
+    batch_y: Optional[torch.Tensor] = None,
+    cosine: bool = False,
+    num_workers: int = 1,
+    batch_size: Optional[int] = None,
+) -> torch.Tensor:
     r"""Finds for each element in :obj:`y` the :obj:`k` nearest points in
     :obj:`x`.
 
@@ -31,6 +36,8 @@ def knn(x: torch.Tensor, y: torch.Tensor, k: int,
         num_workers (int): Number of workers to use for computation. Has no
             effect in case :obj:`batch_x` or :obj:`batch_y` is not
             :obj:`None`, or the input lies on the GPU. (default: :obj:`1`)
+        batch_size (int, optional): The number of examples :math:`B`.
+            Automatically calculated if not given. (default: :obj:`None`)
 
     :rtype: :class:`LongTensor`
 
@@ -45,18 +52,22 @@ def knn(x: torch.Tensor, y: torch.Tensor, k: int,
         batch_y = torch.tensor([0, 0])
         assign_index = knn(x, y, 2, batch_x, batch_y)
     """
+    if x.numel() == 0 or y.numel() == 0:
+        return torch.empty(2, 0, dtype=torch.long, device=x.device)
 
     x = x.view(-1, 1) if x.dim() == 1 else x
     y = y.view(-1, 1) if y.dim() == 1 else y
     x, y = x.contiguous(), y.contiguous()
 
-    batch_size = 1
-    if batch_x is not None:
-        assert x.size(0) == batch_x.numel()
-        batch_size = int(batch_x.max()) + 1
-    if batch_y is not None:
-        assert y.size(0) == batch_y.numel()
-        batch_size = max(batch_size, int(batch_y.max()) + 1)
+    if batch_size is None:
+        batch_size = 1
+        if batch_x is not None:
+            assert x.size(0) == batch_x.numel()
+            batch_size = int(batch_x.max()) + 1
+        if batch_y is not None:
+            assert y.size(0) == batch_y.numel()
+            batch_size = max(batch_size, int(batch_y.max()) + 1)
+    assert batch_size > 0
 
     ptr_x: Optional[torch.Tensor] = None
     ptr_y: Optional[torch.Tensor] = None
@@ -71,10 +82,16 @@ def knn(x: torch.Tensor, y: torch.Tensor, k: int,
                                        num_workers)
 
 
-@torch.jit.script
-def knn_graph(x: torch.Tensor, k: int, batch: Optional[torch.Tensor] = None,
-              loop: bool = False, flow: str = 'source_to_target',
-              cosine: bool = False, num_workers: int = 1) -> torch.Tensor:
+def knn_graph(
+    x: torch.Tensor,
+    k: int,
+    batch: Optional[torch.Tensor] = None,
+    loop: bool = False,
+    flow: str = 'source_to_target',
+    cosine: bool = False,
+    num_workers: int = 1,
+    batch_size: Optional[int] = None,
+) -> torch.Tensor:
     r"""Computes graph edges to the nearest :obj:`k` points.
 
     Args:
@@ -96,6 +113,8 @@ def knn_graph(x: torch.Tensor, k: int, batch: Optional[torch.Tensor] = None,
         num_workers (int): Number of workers to use for computation. Has no
             effect in case :obj:`batch` is not :obj:`None`, or the input lies
             on the GPU. (default: :obj:`1`)
+        batch_size (int, optional): The number of examples :math:`B`.
+            Automatically calculated if not given. (default: :obj:`None`)
 
     :rtype: :class:`LongTensor`
 
@@ -111,7 +130,7 @@ def knn_graph(x: torch.Tensor, k: int, batch: Optional[torch.Tensor] = None,
 
     assert flow in ['source_to_target', 'target_to_source']
     edge_index = knn(x, x, k if loop else k + 1, batch, batch, cosine,
-                     num_workers)
+                     num_workers, batch_size)
 
     if flow == 'source_to_target':
         row, col = edge_index[1], edge_index[0]

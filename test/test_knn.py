@@ -1,11 +1,10 @@
 from itertools import product
 
 import pytest
-import torch
 import scipy.spatial
+import torch
 from torch_cluster import knn, knn_graph
-
-from .utils import grad_dtypes, devices, tensor
+from torch_cluster.testing import devices, grad_dtypes, tensor
 
 
 def to_set(edge_index):
@@ -33,6 +32,10 @@ def test_knn(dtype, device):
     batch_y = tensor([0, 1], torch.long, device)
 
     edge_index = knn(x, y, 2)
+    assert to_set(edge_index) == set([(0, 2), (0, 3), (1, 0), (1, 1)])
+
+    jit = torch.jit.script(knn)
+    edge_index = jit(x, y, 2)
     assert to_set(edge_index) == set([(0, 2), (0, 3), (1, 0), (1, 1)])
 
     edge_index = knn(x, y, 2, batch_x, batch_y)
@@ -63,6 +66,11 @@ def test_knn_graph(dtype, device):
                                       (2, 3), (3, 0), (3, 2)])
 
     edge_index = knn_graph(x, k=2, flow='source_to_target')
+    assert to_set(edge_index) == set([(1, 0), (3, 0), (0, 1), (2, 1), (1, 2),
+                                      (3, 2), (0, 3), (2, 3)])
+
+    jit = torch.jit.script(knn_graph)
+    edge_index = jit(x, k=2, flow='source_to_target')
     assert to_set(edge_index) == set([(1, 0), (3, 0), (0, 1), (2, 1), (1, 2),
                                       (3, 2), (0, 3), (2, 3)])
 

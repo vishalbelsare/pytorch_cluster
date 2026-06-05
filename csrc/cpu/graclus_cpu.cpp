@@ -3,7 +3,7 @@
 #include "utils.h"
 
 torch::Tensor graclus_cpu(torch::Tensor rowptr, torch::Tensor col,
-                          torch::optional<torch::Tensor> optional_weight) {
+                          std::optional<torch::Tensor> optional_weight) {
   CHECK_CPU(rowptr);
   CHECK_CPU(col);
   CHECK_INPUT(rowptr.dim() == 1 && col.dim() == 1);
@@ -47,7 +47,7 @@ torch::Tensor graclus_cpu(torch::Tensor rowptr, torch::Tensor col,
   } else {
     auto weight = optional_weight.value();
     auto scalar_type = weight.scalar_type();
-    AT_DISPATCH_ALL_TYPES_AND(at::ScalarType::Half, scalar_type, "_", [&] {
+    AT_DISPATCH_ALL_TYPES_AND2(at::ScalarType::Half, at::ScalarType::BFloat16, scalar_type, "graclus_cpu", [&] {
       auto weight_data = weight.data_ptr<scalar_t>();
 
       for (auto n = 0; n < num_nodes; n++) {

@@ -1,4 +1,6 @@
+#ifdef WITH_PYTHON
 #include <Python.h>
+#endif
 #include <torch/script.h>
 
 #include "cpu/graclus_cpu.h"
@@ -8,15 +10,17 @@
 #endif
 
 #ifdef _WIN32
+#ifdef WITH_PYTHON
 #ifdef WITH_CUDA
 PyMODINIT_FUNC PyInit__graclus_cuda(void) { return NULL; }
 #else
 PyMODINIT_FUNC PyInit__graclus_cpu(void) { return NULL; }
 #endif
 #endif
+#endif
 
-torch::Tensor graclus(torch::Tensor rowptr, torch::Tensor col,
-                      torch::optional<torch::Tensor> optional_weight) {
+CLUSTER_API torch::Tensor graclus(torch::Tensor rowptr, torch::Tensor col,
+                      std::optional<torch::Tensor> optional_weight) {
   if (rowptr.device().is_cuda()) {
 #ifdef WITH_CUDA
     return graclus_cuda(rowptr, col, optional_weight);

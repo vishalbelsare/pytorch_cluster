@@ -1,9 +1,18 @@
 import importlib
 import os.path as osp
+import warnings
 
 import torch
 
-__version__ = '1.5.9'
+__version__ = '1.6.3'
+
+warnings.warn(
+    "'torch-cluster' is deprecated and no longer maintained. All "
+    "functionality has been migrated to 'pyg-lib>=0.7.0' "
+    "(https://github.com/pyg-team/pyg-lib).",
+    DeprecationWarning,
+    stacklevel=2,
+)
 
 for library in [
         '_version', '_grid', '_graclus', '_fps', '_rw', '_sampler', '_nearest',
@@ -21,7 +30,7 @@ for library in [
                           f"{osp.dirname(__file__)}")
 
 cuda_version = torch.ops.torch_cluster.cuda_version()
-if torch.cuda.is_available() and cuda_version != -1:  # pragma: no cover
+if torch.version.cuda is not None and cuda_version != -1:  # pragma: no cover
     if cuda_version < 10000:
         major, minor = int(str(cuda_version)[0]), int(str(cuda_version)[2])
     else:
@@ -36,11 +45,11 @@ if torch.cuda.is_available() and cuda_version != -1:  # pragma: no cover
             f'{major}.{minor}. Please reinstall the torch_cluster that '
             f'matches your PyTorch install.')
 
+from .fps import fps  # noqa
 from .graclus import graclus_cluster  # noqa
 from .grid import grid_cluster  # noqa
-from .fps import fps  # noqa
-from .nearest import nearest  # noqa
 from .knn import knn, knn_graph  # noqa
+from .nearest import nearest  # noqa
 from .radius import radius, radius_graph  # noqa
 from .rw import random_walk  # noqa
 from .sampler import neighbor_sampler  # noqa

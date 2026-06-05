@@ -45,7 +45,7 @@ knn_kernel(const scalar_t *__restrict__ x, const scalar_t *__restrict__ y,
   int64_t best_idx[100];
 
   for (int e = 0; e < k; e++) {
-    best_dist[e] = 5e4;
+    best_dist[e] = 1e10;
     best_idx[e] = -1;
   }
 
@@ -84,8 +84,8 @@ knn_kernel(const scalar_t *__restrict__ x, const scalar_t *__restrict__ y,
 }
 
 torch::Tensor knn_cuda(const torch::Tensor x, const torch::Tensor y,
-                       torch::optional<torch::Tensor> ptr_x,
-                       torch::optional<torch::Tensor> ptr_y, const int64_t k,
+                       std::optional<torch::Tensor> ptr_x,
+                       std::optional<torch::Tensor> ptr_y, const int64_t k,
                        const bool cosine) {
 
   CHECK_CUDA(x);
@@ -113,9 +113,9 @@ torch::Tensor knn_cuda(const torch::Tensor x, const torch::Tensor y,
 
   CHECK_INPUT(ptr_x.value().numel() == ptr_y.value().numel());
 
-  cudaSetDevice(x.get_device());
+  c10::cuda::MaybeSetDevice(x.get_device());
 
-  auto row = torch::empty(y.size(0) * k, ptr_y.value().options());
+  auto row = torch::empty({y.size(0) * k}, ptr_y.value().options());
   auto col = torch::full(y.size(0) * k, -1, ptr_y.value().options());
 
   dim3 BLOCKS((y.size(0) + THREADS - 1) / THREADS);
